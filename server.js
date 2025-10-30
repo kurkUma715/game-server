@@ -36,7 +36,7 @@ const handleConnection = (socket) => {
     // Send start data
     socket.emit('register', { id: playerId, serverID: serverId });
     socket.on('auth', (data) => {
-        console.log(JSON.stringify(data, null, 2));
+        //console.log(JSON.stringify(data, null, 2));
 
         if (data.success === true || data.success === "true") {
             broadcastSpawn(socket, player);
