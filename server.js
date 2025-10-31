@@ -35,11 +35,16 @@ const handleConnection = (socket) => {
 
     // Send start data
     socket.emit('register', { id: playerId, serverID: serverId });
-    socket.on('auth', (data) => {
-        //console.log(JSON.stringify(data, null, 2));
+    socket.on('auth', (info) => {
+        //console.log(JSON.stringify(info, null, 2));
 
-        if (data.success === true || data.success === "true") {
+        if (info.err === 0) {
+            if (info.data && info.data.profile) {
+                player.profile = info.data.profile;
+            }
+
             broadcastSpawn(socket, player);
+
             sendExistingPlayers(socket, playerId);
         }
         else {
@@ -65,12 +70,24 @@ const sendExistingPlayers = (socket, currentPlayerId) => {
         }
     });
 };
-
 const handleUpdate = (playerId, data) => {
-    //console.log(JSON.stringify(data, null, 2));
+    //console.log('Update data:', JSON.stringify(data, null, 2));
+    const player = players.get(playerId);
+    if (player) {
+        player.transform = data.transform;
+        player.state = data.state;
 
-    players.set(playerId, data);
-    sockets.get(playerId).broadcast.emit('update', data);
+        if (data.profile) {
+            player.profile = data.profile;
+        }
+
+        sockets.get(playerId).broadcast.emit('update', {
+            id: playerId,
+            profile: player.profile,
+            transform: player.transform,
+            state: player.state
+        });
+    }
 };
 
 const handleDisconnect = (playerId) => {
